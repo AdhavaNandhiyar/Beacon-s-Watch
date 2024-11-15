@@ -50,8 +50,26 @@ def draw_square(t, length):
    t.pendown()                     #Drops pen
    t.circle(50)    
 
+class Player:
+    def __init__(self):
+        self.item = False
+
+class Room:
+    def __init__(self):
+        self.description = ""
+
+class Item:
+    def __init__(self):
+        self.description = ""
+
+class Monster:
+    def __init__(self):
+        self.name = ""
+
+
+
 def start_menu():
-    print("|| Pixel Quest ||")
+    print("|| Beacons Watch ||")
     #Starts the game if user presses 1
     start = int(input("Press one to start the game: "))
     if start == 1:
@@ -61,6 +79,3 @@ def start_game():
     print()
 
 win = False
-
-while win == False:
-    start_menu()
