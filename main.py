@@ -5,16 +5,31 @@ class Player:
         self.item = False
 
 class Room:
-    def __init__(self):
-        self.description = ""
+    def __init__(self, description =""):
+        self.description = description or ""
 
 class Item:
-    def __init__(self):
-        self.description = ""
+    def __init__(self, description =""):
+        self.description = description or ""
 
 class Monster:
-    def __init__(self):
-        self.name = ""
+    def __init__(self, name, attack, health, description =""):
+        self.name = name
+        self.attack = attack
+        self.health = health
+        self.description = description or ""
+
+bear = Monster("Bear", 4, 40, "A large black bear with a scar on its chest")
+
+devilsIslandKey = Item()
+outerIslandKey = Item()
+bulb = Item()
+flashlight = Item()
+logbook = Item()
+flareGun = Item()
+keyset = Item()
+fuse = Item()
+tranquilizerGun = Item()
 
 
 
