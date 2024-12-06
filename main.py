@@ -3,8 +3,10 @@ import os
 import turtle
 import random
 
+# turtle pointer
 my_turtle = turtle.Turtle()
 
+# map for entrance
 def draw_entrance(t, length):
     for _ in range(1):
         t.forward(length/2)
@@ -174,7 +176,7 @@ def create_items():
 # Initialize monster dictionaries
 def create_monster():
     # Return a dictionary defining the monster's name and health and damage.
-    return {"name": "Troll", "health": 50}
+    return {"name": "Troll", "health": 50, "dead": False}
 
 # Print room information from its dictionary
 def describe_room(current_room):
@@ -184,7 +186,7 @@ def describe_room(current_room):
     print(current_room['description']) 
 
 # Handle treasure collection dictionaries
-def collect_treasure(current_room, treasures, items, monster_dead):
+def collect_treasure(current_room, treasures, items, monster):
     # Check if the room has treasure.
     if current_room["has_treasure"]: 
         if current_room["name"] == "trophy room":
@@ -200,8 +202,10 @@ def collect_treasure(current_room, treasures, items, monster_dead):
                     current_room["description"] = "A room filled with various trinkets and treasures. The safe is left open."
                     print("You picked up the treasure from the safe!")
                 elif choice == "n":
+                    # change the room description
                     current_room["description"] = "A room filled with various trinkets and treasures. The safe is left open with the treasure stil in it."
             else:
+                # inform player item is needed to get treasure
                 print("There seems to be treasure near by but you need an item. The wine cellar may seem useful")
         elif current_room["name"] == "library":
             if items["bedroom"] == False:
@@ -216,11 +220,13 @@ def collect_treasure(current_room, treasures, items, monster_dead):
                     current_room["description"] = "A wide room filled with various shelves of books and artifacts. You see in the middle of the shelves a large display case opened."
                     print("You picked up the treasure!")
                 elif choice == "n":
+                    # change the room description
                     current_room["description"] = "A wide room filled with various shelves of books and artifacts. You see in the middle of the shelves a large display case opened with the treasure on it."
             else:
+                # inform player item is needed to get treasure
                 print("The case needs to be unlocked with a key! The bedroom may be useful")
         elif current_room["name"] == "lair":
-            if items["armory"] == False and monster_dead == True: 
+            if items["armory"] == False and monster["dead"] == True: 
                 choice = input("You see the Troll's corpse with the shiny treasure still on its head. Do you want to pick it up? (y/n): ").lower()
                 # If player chooses to collect treasure.
                 if choice == "y":  
@@ -232,11 +238,13 @@ def collect_treasure(current_room, treasures, items, monster_dead):
                     current_room["description"] = "A room with a dead Troll evidently from your fight with it."
                     print("You pull the treasure off the trolls head and have now acquired a treasure!")
             else:
-                if items["armory"] == True and monster_dead == False:
+                # infroms player based on conditions of the monstr and player
+                if items["armory"] == True and monster["dead"] == False:
                     print("The troll is asleep so its probably best to head to the armory to pick up some weapons to fight it")
-                elif items["armory"] == False and monster_dead == False:
+                elif items["armory"] == False and monster["dead"] == False:
                     print("Its too risky to grab the treasure while its alive. You should fight the troll first. Make sure to Win!")
     else:
+        # infrom player no treasure in room
         print("It seems this room doesn't have a hint of treasure in it")
 
 # Handle item collection dictionaries
@@ -280,18 +288,20 @@ def collect_item(current_room, items):
                 current_room["description"] = "A room filled with different weapons!"
                 print("You picked up Sword and grabbed a light of the wall! You are now armed")
     else:
+        # inform player no items are useful in the room
         print("It seems this room doesn't have any useful items in it")
 
 # Monster encounter 
-def fight_monster(current_room, monster, items, monster_dead):
+def fight_monster(current_room, monster, items):
     # Check to make sure monster is dead so to not start a fight
-    if current_room["has_treasure"] and monster_dead == True:
+    if monster["dead"] == True:
         print("You have killed the monster there is no more need to fight!")
     # Check parameter to start fight
-    elif current_room["has_treasure"] and monster_dead == False and items["armory"] == False:
+    elif current_room["has_treasure"] and monster["dead"] == False and items["armory"] == False:
         print("You awaken the troll and stun it with a light! prepare to fight for its treasure!")
-        # Fight until the monster's health reaches 0.
+        # initialize the players health
         player_health = 50
+        # Fight until the monster's health reaches 0.
         while monster["health"] > 0:
             # player input
             choice = input("Would you like to attack the troll? (y/n): ").lower()
@@ -319,11 +329,11 @@ def fight_monster(current_room, monster, items, monster_dead):
         # Inform player they can grab the treasure now
         print(f'With one final blow you defeat the {monster['name']}! and are now free to claim the treasure from its head')
         # Update that the monster is dead
-        monster_dead = True
+        monster["dead"] = True
         # Update room description
         current_room["description"] = "A room with a dead Troll evidently from your fight with it. There seems to be a treasure on its head free for the taking"
     # No fight if player does not have the items from the armory
-    elif current_room["has_treasure"] and monster_dead == False and items["armory"] == True:
+    elif current_room["has_treasure"] and monster["dead"] == False and items["armory"] == True:
         print("Best not to risk it barehanded. Try the armory for a weapon.")
 
 # Choose the next room
@@ -344,16 +354,25 @@ def move_to_next_room(current_room, rooms, treasures):
     room_choice = input("Which room do you want to go to next? ") 
     # Checks if input is valid.
     if room_choice in current_room["connected_rooms"]:
+        # check if player is in gsate
         if current_room["name"] == "gate":
             if room_choice == "exit":
+                # if player wants to move to gate check if they have the requirements aka all treasures false
                 if treasures["lair"] == True or treasures["trophy room"] == True or treasures["library"] == True:
+                    # conditons not met so player cant move
                     print("You don't have the right number of treasures to leave")
                     return current_room
                 else:
+                    # conditons met so player can move
                     print("You insert the treasures into the three slots and the gate opens leading to the exit!")
-        # Return the chosen room's data.
+        # clear the board and move the pointer back to the middle to redraw the chosen rooms map
         my_turtle.clear()
+        my_turtle.home()
         rooms[room_choice]["draw"](my_turtle, 100)
+        # check if player is in exit
+        if room_choice == "exit":
+            print("You have reached the exit and have won the game congrats!")
+        # Return the chosen room's data.
         return rooms[room_choice] 
     else:
          # Handle's invalid input.
@@ -361,36 +380,47 @@ def move_to_next_room(current_room, rooms, treasures):
         # Keeps the player in the current room.
         return current_room 
 
+# makes instructions for player
 def instructions():
     print("\nExplore connected rooms, collect treasures, and navigate carefully.")
     print("Once all treasures are collected, head to the gate and insert the treasures into it to leave.")
     print("Use the room menu for actions and navigation.\n")
 
+# main menu/start menu
 def main_menu(game_started):
+    # loop until player wants to play game
     while True:
+        # menu options
         print("\nGame Start Menu")
         print("Select one of the following:")
+        # checks if game has started to change option
         if game_started:
             print("1 - Return Back to the Game")
         else:
             print("1 - Play the Game")
         print("2 - Instructions")
         print("3 - Quit")
+        # get players choice
         choice = input("Enter your choice: ")
         if choice == "1":
-            break
+            # ends the loop to continue
+            return False
         elif choice == "2":
+            # calls the instructions function
             print("You are reading the instructions.")
             instructions()
         elif choice == "3":
-            print("You are ENDING THE GAME.")
-            break
+            # ends the game
+            print("You are ending the game.")
+            exit()
         else:
+            # handles non valid inputs
             print("You made an Illegal Choice.")
 
+# checks to see if player wins and ends if so
 def check_win(treasures, current_room):
     if current_room["name"] == "exit" and treasures["lair"] == False and treasures["trophy room"] == False and treasures["library"] == False:
-        return False
+        exit()
 
 # Main game loop
 def main():
@@ -409,10 +439,9 @@ def main():
     items = create_items()
     # Initialize monster data by calling 'create_monster()' function.
     monster = create_monster()
-    # variable for the main menu
-    monster_dead = False
     # Start in the entrance
     current_room = rooms["entrance"] 
+    # draw the entrance map
     current_room["draw"](my_turtle, 100)
 
     # Main game loop
@@ -427,29 +456,38 @@ def main():
         print("3 - Move to Another Room")
         print("4 - Fight monster (Not usable unless in lair)")
         print("5 - Return to Game Start Menu")
+        # get players input
         choice = input("Enter your choice: ")
 
         if choice == "1":
+            # calls collect treasure
             print("You are looking for treasures.")
-            collect_treasure(current_room, treasures, items, monster_dead)
+            collect_treasure(current_room, treasures, items, monster)
         elif choice == "2":
+            # calls collect items
             print("You are looking for items.")
             collect_item(current_room, items)
         elif choice == "3":
+            # moves player to chosen room
             print("You are moving to another room.")
             # Move to the next room.
             current_room = move_to_next_room(current_room, rooms, treasures) 
         elif choice == "4":
+            # checks if player is in valid room for this option and if so calls fight monster
             if current_room["name"] == "lair":
-                fight_monster(current_room, monster, items, monster_dead)
+                fight_monster(current_room, monster, items)
             else:
                 print("You are not in the correct room for this to work")
         elif choice == "5":
+            # goes back to main menu
             print("You are returning back to the start menu.")
             main_menu(game_started)
         else:
+            # handles misinput
             print("You made an Illegal Choice.")
         
+        # checks at the end of every loop if player is in exit and has all three treasures to win the game and stops the loop
         check_win(treasures, current_room)
 
-main()  # Start the game.
+# Start the game
+main()
